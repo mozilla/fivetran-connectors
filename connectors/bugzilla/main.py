@@ -1,3 +1,4 @@
+import bugzilla
 import json
 import requests
 
@@ -10,10 +11,20 @@ def main(request):
     The standard format of `request` is a JSON object with the following fields:
         `agent`: informal object
         `state`: contains bookmark that marks the data Fivetran has already synced
-        `secret`: optional JSON object that contains access keys or API keys
+        `secret`: optional JSON object that contains access keys or API keys, other config
     """
-    # add custom connector code
-    pass
+    config = request["secret"]
+
+    bzapi = bugzilla.Bugzilla(config["url"], api_key=config["api_key"])
+
+    if not bzapi.logged_in:
+        raise ValueError("Could not connect to Bugzilla.")
+
+    bzapi = bugzilla.Bugzilla(config["url"], api_key=config["api_key"])
+    data = {"components": bzapi.getcomponents(config["product"])}
+
+    return response()
+
 
 
 def response(since_id: str, schema: Dict[Any], inserts: Dict[Any], hasMore: bool):

@@ -31,4 +31,4 @@ deploy-bugzilla:
         name: Deploy Function
         command: |
           cd connectors/bugzilla
-          gcloud functions deploy bugzilla --entry-point main --runtime python38 --trigger-http
+          gcloud functions deploy bugzilla --entry-point main --runtime python38 --trigger-http --service-account $GCLOUD_FUNCTION_ACCOUNT

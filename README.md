@@ -23,3 +23,11 @@ To add a new connector run:
 `<name_of_connector>` is the name of the new connector for which a new directory will be created
 in the `connectors/` directory. The new connector directory will be automatically populated with
 boilerplate code.
+
+### Updating the CircleCI config
+
+To Update the CircleCI `config.yml` and add new connectors to the CI workflow run:
+
+```
+./tools/ci_config
+```

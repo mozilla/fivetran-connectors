@@ -12,17 +12,20 @@ def main(request):
         `state`: contains bookmark that marks the data Fivetran has already synced
         `secret`: optional JSON object that contains access keys or API keys, other config
     """
-    config = request["secret"]
+    config = request.json()["secret"]
 
     bzapi = bugzilla.Bugzilla(config["url"], api_key=config["api_key"])
 
     if not bzapi.logged_in:
         raise ValueError("Could not connect to Bugzilla.")
 
-    bzapi = bugzilla.Bugzilla(config["url"], api_key=config["api_key"])
-    data = {"products": bzapi.getproducts()}
+    components = [
+        component
+        for product in config["products"]
+        for component in bzapi.getcomponents(product)
+    ]
 
-    return response("", {}, data, hasMore=False)
+    return response("", {}, components, hasMore=False)
 
 
 def response(

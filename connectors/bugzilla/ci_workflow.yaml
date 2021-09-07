@@ -10,7 +10,7 @@ build-job-bugzilla:
         command: |
           cd connectors/bugzilla
           python3.8 -m venv venv/
-          venv/bin/pip install pip-tools --constraint requirements.in
+          venv/bin/pip install pip-tools --constraint requirements.txt
           venv/bin/pip-sync    
     - run:
         name: Test connector code

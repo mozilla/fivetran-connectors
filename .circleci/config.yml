@@ -35,9 +35,8 @@ jobs:
             # patterns to restore cache
             - &python_cache_key
               # yamllint disable-line rule:line-length
-              python-3.8-packages-v1-{{ .Branch }}-{{ checksum "requirements.in" }}-{{ checksum "requirements.txt" }}
+              python-3.8-packages-v1-{{ .Branch }}-{{ checksum "requirements.txt" }}
               # yamllint disable-line rule:line-length
-            - python-3.8-packages-v1-{{ .Branch }}-{{ checksum "requirements.in" }}-
             - python-3.8-packages-v1-{{ .Branch }}-
             - python-3.8-packages-v1-main-
             
@@ -45,8 +44,7 @@ jobs:
           name: Build
           command: |
             python3.8 -m venv venv/
-            venv/bin/pip install pip-tools --constraint requirements.in
-            venv/bin/pip-sync
+            venv/bin/pip install pip-tools --constraint requirements.txt
       - run:
           name: "Run tests for tools/"
           command: echo "todo run tests"
@@ -68,7 +66,7 @@ jobs:
           command: |
             cd connectors/bugzilla
             python3.8 -m venv venv/
-            venv/bin/pip install pip-tools --constraint requirements.in
+            venv/bin/pip install pip-tools --constraint requirements.txt
             venv/bin/pip-sync    
       - run:
           name: Test connector code

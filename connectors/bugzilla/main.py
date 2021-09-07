@@ -21,7 +21,7 @@ def main(request):
         raise ValueError("Could not connect to Bugzilla.")
 
     bzapi = bugzilla.Bugzilla(config["url"], api_key=config["api_key"])
-    data = {"components": bzapi.getcomponents(config["product"])}
+    data = {"products": bzapi.getproducts()}
 
     return response()
 

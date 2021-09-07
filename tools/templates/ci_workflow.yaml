@@ -1,0 +1,44 @@
+build-job-{{ connector_name }}:
+  docker: *docker
+  steps:
+    - checkout
+    - compare-branch:
+        pattern: ^connectors/{{ connector_name }}/
+    - run:
+        name: Build
+        command: |
+          cd connectors/{{ connector_name }}
+          python3.8 -m venv venv/
+          venv/bin/pip install pip-tools --constraint requirements.in
+          venv/bin/pip-sync    
+    - run:
+        name: Test connector code
+        command: echo "Run tests for connector"
+deploy-{{ connector_name }}:
+  docker:
+    - image: google/cloud-sdk
+  steps:
+    - checkout
+    - run:
+        name: Authorize gcloud CLI
+        command: |
+          export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcp.json"
+          echo "$GCLOUD_SERVICE_KEY" > "$GOOGLE_APPLICATION_CREDENTIALS"
+          gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+          gcloud config set project $GCLOUD_PROJECT
+    - run:
+        name: Deploy Function
+        command: |
+          cd connectors/{{ connector_name }}
+          gcloud functions deploy {{ connector_name }} --entry-point main --runtime python38 --trigger-http
+
+
+job-{{ connector_name }}:
+  jobs:
+    - build-job-{{ connector_name }}
+    - deploy-{{ connector_name }}:
+        requires:
+          - build-job-{{ connector_name }}
+        filters:
+          branches:
+            only: main

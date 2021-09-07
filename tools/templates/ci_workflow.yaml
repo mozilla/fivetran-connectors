@@ -8,9 +8,9 @@ build-job-{{ connector_name }}:
     - run:
         name: Build
         command: |
+          python3.8 -m venv venv/
           venv/bin/pip install -r requirements.txt
           cd connectors/{{ connector_name }}
-          python3.8 -m venv venv/
           venv/bin/pip install -r requirements.txt
     - run:
         name: isort

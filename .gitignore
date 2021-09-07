@@ -1,1 +1,2 @@
 .python-version
+connectors/**/tests/__pycache__/*

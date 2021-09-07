@@ -35,8 +35,16 @@ def update_config(dry_run: bool = False) -> str:
     template_env = jinja2.Environment(loader=template_loader)
     config_template = template_env.get_template("config.template.yml")
 
-    workflow_configs = sorted([obj for obj in CONNECTOR_DIR.glob(f"*/{CI_WORKFLOW_TEMPLATE_NAME}") if obj.is_file()])
-    connectors = [os.path.basename(f.path) for f in os.scandir(CONNECTOR_DIR) if f.is_dir()]
+    workflow_configs = sorted(
+        [
+            obj
+            for obj in CONNECTOR_DIR.glob(f"*/{CI_WORKFLOW_TEMPLATE_NAME}")
+            if obj.is_file()
+        ]
+    )
+    connectors = [
+        os.path.basename(f.path) for f in os.scandir(CONNECTOR_DIR) if f.is_dir()
+    ]
 
     invalid_configs = [
         str(conf.relative_to(ROOT_DIR))
@@ -53,7 +61,7 @@ def update_config(dry_run: bool = False) -> str:
         workflows="\n\n".join(
             [file_path.read_text() for file_path in workflow_configs]
         ),
-        connectors=connectors
+        connectors=connectors,
     )
 
     if dry_run:

@@ -39,7 +39,6 @@ jobs:
               # yamllint disable-line rule:line-length
             - python-3.8-packages-v1-{{ .Branch }}-
             - python-3.8-packages-v1-main-
-            
       - run:
           name: Build
           command: |
@@ -66,11 +65,16 @@ jobs:
           command: |
             cd connectors/bugzilla
             python3.8 -m venv venv/
-            venv/bin/pip install pip-tools --constraint requirements.txt
-            venv/bin/pip-sync    
+            venv/bin/pip install -r requirements.txt
+      - run:
+          name: isort
+          command: venv/bin/isort --check .
+      - run:
+          name: Mypy
+          command: venv/bin/mypy --ignore-missing-imports .
       - run:
           name: Test connector code
-          command: echo "Run tests for connector"
+          command: venv/bin/pytest --black --flake8 tests/
   deploy-bugzilla:
     docker:
       - image: google/cloud-sdk

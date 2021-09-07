@@ -8,6 +8,7 @@ build-job-bugzilla:
     - run:
         name: Build
         command: |
+          venv/bin/pip install -r requirements.txt
           cd connectors/bugzilla
           python3.8 -m venv venv/
           venv/bin/pip install -r requirements.txt

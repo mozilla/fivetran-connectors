@@ -1,5 +1,6 @@
 build-job-bugzilla:
-  docker: *docker
+  docker:
+    - image: python:3.8
   steps:
     - checkout
     - compare-branch:
@@ -31,14 +32,3 @@ deploy-bugzilla:
         command: |
           cd connectors/bugzilla
           gcloud functions deploy bugzilla --entry-point main --runtime python38 --trigger-http
-
-
-job-bugzilla:
-  jobs:
-    - build-job-bugzilla
-    - deploy-bugzilla:
-        requires:
-          - build-job-bugzilla
-        filters:
-          branches:
-            only: main

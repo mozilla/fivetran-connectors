@@ -1,5 +1,6 @@
 build-job-{{ connector_name }}:
-  docker: *docker
+  docker:
+    - image: python:3.8
   steps:
     - checkout
     - compare-branch:
@@ -31,14 +32,3 @@ deploy-{{ connector_name }}:
         command: |
           cd connectors/{{ connector_name }}
           gcloud functions deploy {{ connector_name }} --entry-point main --runtime python38 --trigger-http
-
-
-job-{{ connector_name }}:
-  jobs:
-    - build-job-{{ connector_name }}
-    - deploy-{{ connector_name }}:
-        requires:
-          - build-job-{{ connector_name }}
-        filters:
-          branches:
-            only: main

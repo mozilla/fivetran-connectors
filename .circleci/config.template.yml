@@ -1,0 +1,73 @@
+version: 2.1
+
+commands:
+  compare-branch:
+    description: Compare current branch with main
+    parameters:
+      pattern:
+        type: string
+    steps:
+      - run:
+          name: Compare current branch with main
+          command: |
+            if [ "$CIRCLE_BRANCH" = main ]; then
+                echo "Run tests because branch is main"
+            elif git log --format=%B --no-merges -n 1 | grep -qF '[run-tests]'; then
+                echo "Run tests because [run-tests] in commit message"
+            elif git diff --name-only ..origin | egrep -q '<< parameters.pattern >>'; then
+                echo "Run tests because << parameters.pattern >> was modified since branching off main"
+            else
+                echo "Skipping tests because << parameters.pattern >> was not modified"
+                circleci step halt
+            fi
+
+jobs:
+  build-fivetran-connectors:
+    docker:
+      - image: python:3.8
+    steps:
+      - checkout
+      - &restore_venv_cache
+        restore_cache:
+          keys:
+            {% raw %}
+            # when lock files change, use increasingly general
+            # patterns to restore cache
+            - &python_cache_key
+              # yamllint disable-line rule:line-length
+              python-3.8-packages-v1-{{ .Branch }}-{{ checksum "requirements.in" }}-{{ checksum "requirements.txt" }}
+              # yamllint disable-line rule:line-length
+            - python-3.8-packages-v1-{{ .Branch }}-{{ checksum "requirements.in" }}-
+            - python-3.8-packages-v1-{{ .Branch }}-
+            - python-3.8-packages-v1-main-
+            {% endraw %}
+      - run:
+          name: Build
+          command: |
+            python3.8 -m venv venv/
+            venv/bin/pip install pip-tools --constraint requirements.in
+            venv/bin/pip-sync
+      - run:
+          name: "Run tests for tools/"
+          command: echo "todo run tests"
+      - save_cache:
+          paths:
+            - venv/
+          key: *python_cache_key
+
+
+{{ workflows | indent(2, True) }}
+
+workflows:
+  fivetran-connectors:
+    jobs:
+      - build-fivetran-connectors
+      {%- for connector_name in connectors %}
+      - build-job-{{ connector_name }}
+      - deploy-{{ connector_name }}:
+          requires:
+            - build-job-{{ connector_name }}
+          filters:
+            branches:
+              only: main
+      {%- endfor%}

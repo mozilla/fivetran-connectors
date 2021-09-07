@@ -12,7 +12,7 @@ def main(request):
         `state`: contains bookmark that marks the data Fivetran has already synced
         `secret`: optional JSON object that contains access keys or API keys, other config
     """
-    config = request.json()["secret"]
+    config = request.json["secret"]
 
     bzapi = bugzilla.Bugzilla(config["url"], api_key=config["api_key"])
 

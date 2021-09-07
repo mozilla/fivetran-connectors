@@ -10,17 +10,16 @@ build-job-{{ connector_name }}:
         command: |
           python3.8 -m venv venv/
           venv/bin/pip install -r requirements.txt
-          cd connectors/{{ connector_name }}
-          venv/bin/pip install -r requirements.txt
+          venv/bin/pip install -r connectors/{{ connector_name }}/requirements.txt
     - run:
         name: isort
-        command: venv/bin/isort --check .
+        command: venv/bin/isort --check connectors/{{ connector_name }}
     - run:
         name: Mypy
-        command: venv/bin/mypy --ignore-missing-imports .
+        command: venv/bin/mypy --ignore-missing-imports connectors/{{ connector_name }}
     - run:
         name: Test connector code
-        command: venv/bin/pytest --black --flake8 tests/
+        command: venv/bin/pytest --black --flake8 connectors/{{ connector_name }}/tests/
 deploy-{{ connector_name }}:
   docker:
     - image: google/cloud-sdk

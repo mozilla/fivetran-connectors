@@ -10,8 +10,7 @@ build-job-{{ connector_name }}:
         command: |
           cd connectors/{{ connector_name }}
           python3.8 -m venv venv/
-          venv/bin/pip install pip-tools --constraint requirements.in
-          venv/bin/pip-sync    
+          venv/bin/pip install pip-tools --constraint requirements.txt
     - run:
         name: Test connector code
         command: echo "Run tests for connector"

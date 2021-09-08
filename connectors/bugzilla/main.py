@@ -111,5 +111,6 @@ def response(
         "state": state,
         "schema": schema,
         "insert": inserts,
+        "delete": deletes,
         "hasMore": hasMore,
     }

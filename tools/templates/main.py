@@ -17,11 +17,18 @@ def main(request):
     pass
 
 
-def response(since_id: str, schema: Dict[Any], inserts: Dict[Any], hasMore: bool):
+def response(
+    state: Dict[str, Any],
+    schema: Dict[Any, Any],
+    inserts: Dict[Any, Any] = {},
+    deletes: Dict[Any, Any] = {},
+    hasMore: bool = False,
+):
     """Creates the response JSON object that will be processed by Fivetran."""
     return {
-        "state": {since_id: since_id},
+        "state": state,
         "schema": schema,
         "insert": inserts,
+        "delete": deletes,
         "hasMore": hasMore,
     }

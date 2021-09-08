@@ -31,3 +31,12 @@ To Update the CircleCI `config.yml` and add new connectors to the CI workflow ru
 ```
 ./tools/ci_config
 ```
+
+
+## Custom Connectors
+
+[todo] Add more documentation
+
+Some helpful resources when writing custom connectors:
+* https://github.com/fivetran/functions
+* https://cloud.google.com/architecture/partners/building-custom-data-integrations-using-fivetran-and-cloud-functions

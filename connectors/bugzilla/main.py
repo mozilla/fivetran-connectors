@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Dict
 
 import bugzilla
@@ -12,19 +13,20 @@ def main(request):
         `state`: contains bookmark that marks the data Fivetran has already synced
         `secret`: optional JSON object that contains access keys or API keys, other config
     """
+    # authenticate to Bugzilla API
     config = request.json["secret"]
-
     bzapi = bugzilla.Bugzilla(config["url"], api_key=config["api_key"])
 
     if not bzapi.logged_in:
         raise ValueError("Could not connect to Bugzilla.")
 
+    # get product data
     products = bzapi.getproducts()
-
     products_data = [
         {"name": product["name"], "id": product["id"]} for product in products
     ]
 
+    # get component data
     components_data = [
         {
             "name": component["name"],
@@ -37,18 +39,26 @@ def main(request):
         for component in product["components"]
     ]
 
+    # since_id is based on the last date the import ran
+    # only fetch bugs that have been updated since then
     since_id = None
     if "since_id" in request.json["state"]:
         since_id = request.json["state"]["since_id"]
 
     if since_id is None:
+        # if this is the first time the connector is executed
         # limit the max. of data to be queried
         since_id = config["max_date"]
 
+    # check if the invokation happened because a previous run indicated
+    # that there is more data available
     offset = 0
     if "offset" in request.json["state"]["offset"]:
         offset = request.json["state"]["offset"]
 
+    # query bugs from all available products and components
+    # sort product and component names to ensure the same query is executed in 
+    # subsequent runs
     sorted_products = sorted([product["name"] for product in products_data])
     sorted_components = sorted([component["name"] for component in components_data])
     query = bzapi.build_query(
@@ -76,7 +86,13 @@ def main(request):
         for bug in bugs
     ]
 
-    hasMore = len(bugs) == config["bug_limit"]
+    # check if there is more data
+    if len(bugs) == config["bug_limit"]:
+        hasMore = True
+    else:
+        hasMore = False
+        since_id = datetime.now().strftime("%Y-%m-%dT%H-%M-%SZ")
+
     state = {"since_id": since_id, "offset": offset + 1}
 
     schema = {

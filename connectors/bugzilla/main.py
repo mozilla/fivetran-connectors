@@ -21,12 +21,12 @@ def main(request):
         raise ValueError("Could not connect to Bugzilla.")
 
     # get product data
-    products = bzapi.getproducts()
     products_data = [
-        {"name": product["name"], "id": product["id"]} for product in products
+        {"name": product} for product in config["products"]
     ]
 
     # get component data
+    products = config["products"]
     components_data = [
         {
             "name": component["name"],
@@ -36,7 +36,7 @@ def main(request):
             "description": component["description"],
         }
         for product in products
-        for component in product["components"]
+        for _, component in bzapi.getcomponentsdetails(product).items()
     ]
 
     # since_id is based on the last date the import ran
@@ -52,8 +52,8 @@ def main(request):
 
     # check if the invokation happened because a previous run indicated
     # that there is more data available
-    offset = 0
-    if "offset" in request.json["state"]["offset"]:
+    offset = 1
+    if "offset" in request.json["state"]:
         offset = request.json["state"]["offset"]
 
     # query bugs from all available products and components
@@ -64,10 +64,10 @@ def main(request):
     query = bzapi.build_query(
         product=sorted_products,
         component=sorted_components,
-        limit=config["bug_limit"],
-        offset=offset,
+        limit=config["bug_limit"]
     )
     query["last_change_time"] = since_id
+    query["offset"] = offset
 
     bugs = bzapi.query(query)
 
@@ -97,7 +97,7 @@ def main(request):
 
     schema = {
         "products": {
-            "primary_key": ["id", "name"],
+            "primary_key": ["name"],
         },
         "components": {"primary_key": ["id", "name"]},
         "bugs": {"primary_key": ["id"]},

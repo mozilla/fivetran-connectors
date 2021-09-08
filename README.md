@@ -4,7 +4,7 @@ Custom connectors for [Fivetran](https://fivetran.com/) implemented as Google Cl
 
 ## Development
 
-The tools in this repository are intended for python 3.8+.
+The tools in this repository are intended for Python 3.8+.
 
 To install dependencies:
 

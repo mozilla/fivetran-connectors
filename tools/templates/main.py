@@ -1,7 +1,7 @@
 import json
-import requests
-
 from typing import Any, Dict
+
+import requests
 
 
 def main(request):

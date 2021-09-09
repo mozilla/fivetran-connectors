@@ -14,7 +14,7 @@ def main(request):
         `secret`: optional JSON object that contains access keys or API keys, other config
     """
     # authenticate to Bugzilla API
-    config = request.json["secret"]
+    config = request.json["secrets"]
     bzapi = bugzilla.Bugzilla(config["url"], api_key=config["api_key"])
 
     if not bzapi.logged_in:

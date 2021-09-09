@@ -13,9 +13,9 @@ The following configuration needs to be provided for the connector:
 
 ```json
 {
-    "url": "https://bugzilla.mozilla.org/rest/" // URL to Bugzilla instance,
-    "api_key": "*********" // API key
-    "max_date": "2014-09-01T19:12:17Z"  // max. date to backfill to (only used on first run)
+    "url": "https://bugzilla.mozilla.org/rest/", // URL to Bugzilla instance,
+    "api_key": "*********", // API key
+    "max_date": "2014-09-01T19:12:17Z",  // max. date to backfill to (only used on first run)
     "bug_limit": "1000", // max. number of bugs fetched when connector gets invoked
     "products": ["Core"]    // Bugzilla products of interest
 }

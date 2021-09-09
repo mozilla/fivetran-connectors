@@ -14,6 +14,7 @@ def main(request):
         `secret`: optional JSON object that contains access keys or API keys
     """
     # add custom connector code
+    config = request.json['secrets']
     pass
 
 

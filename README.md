@@ -58,10 +58,110 @@ instead of Fivetrans built-in scheduling. Create a new DAG in telemetry-airflow,
 will trigger the Fivetran connector. `FivetranSensor` can be used to monitor the progress of the data import.
 An example of what a data import DAG could look like can be found here: https://github.com/mozilla/telemetry-airflow/blob/main/dags/bugzilla.py
 
-## Custom Connectors
+## Custom Connectors Development Notes
 
-[todo] Add more documentation
+This is a collection of things to keep in mind/useful information when writing code for custom connectors.
 
-Some helpful resources when writing custom connectors:
+### Passing Data into Connectors
+
+To pass configuration data, such as API keys, into a custom connector a JSON object can be specified in the
+Fivetran settings. The JSON object can be set as the "Secret". The connector can access the JSON data via 
+the `request` object:
+
+```python
+def main(request):
+    config = request.json['secrets']
+```
+
+### Connector Response Format
+
+The expected response format for connectors is: 
+
+```json
+{
+    "state": {
+        "since_id": "2018-01-02T00:00:01Z",
+        // other data
+    },
+    "insert": {
+        "table_name": [
+            {"id":1, "value": 100},
+            // rows that will get added to "table_name" table in BigQuery
+        ],
+        // ...
+    },
+    "delete": {},
+    "schema" : {
+        "table_name": {
+            "primary_key": ["id"]
+        },
+        // ....
+    },
+    "hasMore" : true // or false
+}
+```
+
+### Incremental Data Updates
+
+To keep track of what data has already been imported in previous runs, Fivetran passes a `since_id` value
+as part of the `state` object. `since_id` needs to be updated by the connector and can be set, for example,
+to the date of the last data entry imported.
+
+```python
+def main(request):
+    # [...]
+
+    since_id = request.json["state"]["since_id"]
+
+    # make API request to get data added after since_id
+    data = api.get_data(last_modified=since_id)
+
+    # [...]
+    # update since_id
+    return {
+        "state": {
+            "since_id": max_date(data)
+            # [...]
+        },
+        # [...]
+    }
+```
+
+### Follow-up Calls to Fetch more Data
+
+Google Cloud Functions have a couple of limitations. For instance, the maximum runtime is around 10 minutes and
+available memory is limited. In some cases importing all data in one run might not be possible.
+
+`hasMore` can be used to indicate to Fivetran to trigger the connector again to import more available data.
+To keep track of what data has already been imported in previous runs, `state` has an `offset` value. `offset`
+can, for example, be set to the date of the last data record imported.
+
+`hasMore` and `offset` need to be updated every time the connector is triggered.
+
+```python
+def main(request):
+    # [...]
+    offset = 1
+    if "offset" in request.json["state"]:
+        offset = request.json["state"]["offset"]
+
+    # fetch more data
+
+    # [...]
+
+    # udpate offset and hasMore
+    return {
+        "state": {
+            "offset": offset + 1
+        },
+        "hasMore": has_more_data(data),
+        # [...]
+    }
+```
+
+
+### Other Resources
+
 * https://github.com/fivetran/functions
 * https://cloud.google.com/architecture/partners/building-custom-data-integrations-using-fivetran-and-cloud-functions
+* https://fivetran.com/blog/serverless-etl-with-cloud-functions

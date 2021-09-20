@@ -11,7 +11,7 @@ def main(request):
     The standard format of `request` is a JSON object with the following fields:
         `agent`: informal object
         `state`: contains bookmark that marks the data Fivetran has already synced
-        `secret`: optional JSON object that contains access keys or API keys, other config
+        `secrets`: optional JSON object that contains access keys or API keys, other config
     """
     # authenticate to Bugzilla API
     config = request.json["secrets"]

@@ -1,4 +1,6 @@
+*.pyc
 .python-version
+.idea/
 connectors/**/tests/__pycache__/*
 venv/*
 fivetran_connectors.egg-info/

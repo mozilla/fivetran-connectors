@@ -37,6 +37,7 @@ jobs:
               # yamllint disable-line rule:line-length
               python-3.8-packages-v1-{{ .Branch }}-{{ checksum "requirements.txt" }}
               # yamllint disable-line rule:line-length
+            - python-3.8-packages-v1-{{ .Branch }}-{{ checksum "requirements.in" }}-
             - python-3.8-packages-v1-{{ .Branch }}-
             - python-3.8-packages-v1-main-
             
@@ -44,7 +45,7 @@ jobs:
           name: Build
           command: |
             python3.8 -m venv venv/
-            venv/bin/pip install pip-tools --constraint requirements.txt
+            venv/bin/pip install pip-tools --constraint requirements.in
       - run:
           name: "Run tests for tools/"
           command: echo "todo run tests"

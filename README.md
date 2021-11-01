@@ -6,10 +6,10 @@ Custom connectors for [Fivetran](https://fivetran.com/) implemented as Google Cl
 
 The tools in this repository are intended for Python 3.8+.
 
-To install dependencies:
+To install the CLI:
 
 ```
-pip install -r requirements.txt
+./fivetran bootstrap
 ```
 
 ### Creating a New Connector
@@ -17,7 +17,7 @@ pip install -r requirements.txt
 To add a new connector run:
 
 ```
-./tools/generate <name_of_connector>
+./fivetran connector create <name_of_connector>
 ```
 
 `<name_of_connector>` is the name of the new connector for which a new directory will be created
@@ -29,7 +29,7 @@ boilerplate code.
 To Update the CircleCI `config.yml` and add new connectors to the CI workflow run:
 
 ```
-./tools/ci_config
+./fivetran ci_config update
 ```
 
 ### Setting up a Custom Connector in Fivetran

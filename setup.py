@@ -34,6 +34,7 @@ setup(
         "cattrs",
         "attrs",
         "typing",
+        "PyYAML",
     ],
     long_description="Tooling for building custom Fivetran connectors",
     long_description_content_type="text/markdown",

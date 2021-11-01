@@ -8,8 +8,6 @@ import yaml
 from yaml.scanner import ScannerError
 
 ROOT_DIR = (Path(__file__).parent / "..").resolve()
-CONNECTOR_DIR = ROOT_DIR / "connectors"
-CI_DIR = os.path.join(ROOT_DIR, ".circleci")
 CI_CONFIG_TEMPLATE = "config.template.yml"
 CI_WORKFLOW_TEMPLATE_NAME = "ci_workflow.yaml"
 
@@ -29,25 +27,29 @@ def validate_yaml(yaml_path: Path) -> bool:
     return True
 
 
-def update_config(dry_run: bool = False) -> str:
+def update_config(dry_run: bool = False, root: str = ROOT_DIR) -> str:
     """Collect job and workflow configs per job and create new config."""
-    template_loader = jinja2.FileSystemLoader(CI_DIR)
+    root_dir = Path(root)
+    ci_dir = root_dir / ".circleci"
+    template_loader = jinja2.FileSystemLoader(ci_dir)
     template_env = jinja2.Environment(loader=template_loader)
     config_template = template_env.get_template("config.template.yml")
+
+    connector_dir = root_dir / "connectors"
 
     workflow_configs = sorted(
         [
             obj
-            for obj in CONNECTOR_DIR.glob(f"*/{CI_WORKFLOW_TEMPLATE_NAME}")
+            for obj in connector_dir.glob(f"*/{CI_WORKFLOW_TEMPLATE_NAME}")
             if obj.is_file()
         ]
     )
     connectors = [
-        os.path.basename(f.path) for f in os.scandir(CONNECTOR_DIR) if f.is_dir()
+        os.path.basename(f.path) for f in os.scandir(connector_dir) if f.is_dir()
     ]
 
     invalid_configs = [
-        str(conf.relative_to(ROOT_DIR))
+        str(conf.relative_to(root_dir))
         for conf in workflow_configs
         if not validate_yaml(conf)
     ]
@@ -67,7 +69,7 @@ def update_config(dry_run: bool = False) -> str:
     if dry_run:
         print(config_text)
     else:
-        with open(ROOT_DIR / ".circleci" / "config.yml", "w") as f:
+        with open(root_dir / ".circleci" / "config.yml", "w") as f:
             f.write(config_text)
 
     return config_text
@@ -85,5 +87,6 @@ def ci_config():
     default=False,
     help="Dry run will print to stdout instead of overwriting config.yml",
 )
-def update(dry_run: bool):
-    update_config(dry_run)
+@click.option("--root", "-r", help="Root directory", default=ROOT_DIR)
+def update(dry_run: bool, root: str):
+    update_config(dry_run, root)

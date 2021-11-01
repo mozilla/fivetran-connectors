@@ -10,12 +10,12 @@ CONNECTOR_DIR = ROOT_DIR / "connectors"
 CI_WORKFLOW_TEMPLATE_NAME = "ci_workflow.yaml"
 
 
-def copy_connector_template(connector_name: str):
+def copy_connector_template(connector_name: str, destination: str):
     """Copy job template files to jobs directory."""
     try:
         shutil.copytree(
             src=TEMPLATES_DIR,
-            dst=CONNECTOR_DIR / connector_name.replace("-", "_"),
+            dst=Path(destination) / connector_name.replace("-", "_"),
         )
     except FileExistsError:
         raise ValueError(f"Connector with name {connector_name} already exists.")
@@ -32,7 +32,7 @@ def copy_connector_template(connector_name: str):
         )
 
     ci_workflow_text = ci_workflow_template.render(connector_name=connector_name)
-    with open(CONNECTOR_DIR / connector_name / CI_WORKFLOW_TEMPLATE_NAME, "w") as f:
+    with open(Path(destination) / connector_name / CI_WORKFLOW_TEMPLATE_NAME, "w") as f:
         f.write(ci_workflow_text)
 
 
@@ -44,5 +44,8 @@ def connector():
 
 @connector.command(help="""Create a new custom Fivetran connector.""")
 @click.argument("connector_name")
-def create(connector_name: str):
-    copy_connector_template(connector_name)
+@click.option(
+    "--destination", "-d", help="Destination directory", default=CONNECTOR_DIR
+)
+def create(connector_name: str, destination: str):
+    copy_connector_template(connector_name, destination)

@@ -73,15 +73,17 @@ def update_config(dry_run: bool = False) -> str:
     return config_text
 
 
-@click.command()
+@click.group(help="Commands for managing CI configuration.")
+def ci_config():
+    """Create the CLI group for the ci command."""
+    pass
+
+
+@ci_config.command(help="""Update CI configuration.""")
 @click.option(
     "--dry-run/--no-dry-run",
     default=False,
     help="Dry run will print to stdout instead of overwriting config.yml",
 )
-def main(dry_run: bool):
+def update(dry_run: bool):
     update_config(dry_run)
-
-
-if __name__ == "__main__":
-    main()

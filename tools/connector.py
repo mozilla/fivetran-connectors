@@ -36,11 +36,13 @@ def copy_connector_template(connector_name: str):
         f.write(ci_workflow_text)
 
 
-@click.command()
+@click.group(help="Commands for managing connectors.")
+def connector():
+    """Create the CLI group for the connector command."""
+    pass
+
+
+@connector.command(help="""Create a new custom Fivetran connector.""")
 @click.argument("connector_name")
-def create_connector(connector_name: str):
+def create(connector_name: str):
     copy_connector_template(connector_name)
-
-
-if __name__ == "__main__":
-    create_connector()

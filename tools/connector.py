@@ -15,7 +15,7 @@ def copy_connector_template(connector_name: str, destination: str):
     try:
         shutil.copytree(
             src=TEMPLATES_DIR,
-            dst=Path(destination) / connector_name.replace("-", "_"),
+            dst=Path(destination) / connector_name,
         )
     except FileExistsError:
         raise ValueError(f"Connector with name {connector_name} already exists.")

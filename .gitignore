@@ -1,2 +1,5 @@
 .python-version
 connectors/**/tests/__pycache__/*
+venv/*
+fivetran_connectors.egg-info/
+*.pyc

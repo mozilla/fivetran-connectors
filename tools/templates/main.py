@@ -1,4 +1,3 @@
-import json
 from typing import Any, Dict
 
 import requests
@@ -14,7 +13,7 @@ def main(request):
         `secrets`: optional JSON object that contains access keys or API keys
     """
     # add custom connector code
-    config = request.json['secrets']
+    config = request.json["secrets"]
     pass
 
 

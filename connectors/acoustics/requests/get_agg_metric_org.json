@@ -1,0 +1,14 @@
+{
+            "Envelope": {
+                "Body": {
+                    "GetAggregateTrackingForOrg": {
+                        "PRIVATE": "None",
+                        "SENT": "None",
+                        "TOP_DOMAIN": "None",
+                        "DATE_START":"08/01/2021 00:00:00",
+                        "DATE_END":"11/30/2021 00:00:00"
+                    }
+
+                }
+            }
+        }

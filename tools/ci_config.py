@@ -34,6 +34,9 @@ class DeployConfig:
             self.config = yaml.safe_load(f)
     
     def get_ci_config(self):
+        if self.config is None:
+            return ""
+            
         return "/n".join(
             [
                 self.ci_template.format(

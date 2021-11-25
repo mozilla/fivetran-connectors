@@ -37,15 +37,14 @@ jobs:
               # yamllint disable-line rule:line-length
               python-3.8-packages-v1-{{ .Branch }}-{{ checksum "requirements.txt" }}
               # yamllint disable-line rule:line-length
-            - python-3.8-packages-v1-{{ .Branch }}-{{ checksum "requirements.in" }}-
             - python-3.8-packages-v1-{{ .Branch }}-
             - python-3.8-packages-v1-main-
-
+            
       - run:
           name: Build
           command: |
             python3.8 -m venv venv/
-            venv/bin/pip install pip-tools --constraint requirements.in
+            venv/bin/pip install pip-tools --constraint requirements.txt
       - run:
           name: "Run tests for tools/"
           command: echo "todo run tests"
@@ -53,6 +52,25 @@ jobs:
           paths:
             - venv/
           key: *python_cache_key
+  deploy:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - checkout
+      - run:
+          name: Authorize gcloud CLI
+          command: |
+            export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcp.json"
+            echo "$GCLOUD_SERVICE_KEY" > "$GOOGLE_APPLICATION_CREDENTIALS"
+            gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+            gcloud config set project $GCLOUD_PROJECT
+  
+      - run:
+          name: Deploy casa
+          command: |
+            cd connectors/casa
+            gcloud functions deploy casa --entry-point main --runtime python38 --trigger-http
+      
 
 
   build-job-bugzilla:
@@ -77,23 +95,6 @@ jobs:
       - run:
           name: Test connector code
           command: venv/bin/pytest --black --flake8 connectors/bugzilla/tests/
-  deploy-bugzilla:
-    docker:
-      - image: google/cloud-sdk
-    steps:
-      - checkout
-      - run:
-          name: Authorize gcloud CLI
-          command: |
-            export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcp.json"
-            echo "$GCLOUD_SERVICE_KEY" > "$GOOGLE_APPLICATION_CREDENTIALS"
-            gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
-            gcloud config set project $GCLOUD_PROJECT
-      - run:
-          name: Deploy Function
-          command: |
-            cd connectors/bugzilla
-            gcloud functions deploy bugzilla --entry-point main --runtime python38 --trigger-http --service-account $GCLOUD_FUNCTION_ACCOUNT
 
 
   build-job-casa:
@@ -118,39 +119,19 @@ jobs:
       - run:
           name: Test connector code
           command: venv/bin/pytest --black --flake8 connectors/casa/tests/
-  deploy-casa:
-    docker:
-      - image: google/cloud-sdk
-    steps:
-      - checkout
-      - run:
-          name: Authorize gcloud CLI
-          command: |
-            export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcp.json"
-            echo "$GCLOUD_SERVICE_KEY" > "$GOOGLE_APPLICATION_CREDENTIALS"
-            gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
-            gcloud config set project $GCLOUD_PROJECT
-      - run:
-          name: Deploy Function
-          command: |
-            cd connectors/casa
-            gcloud functions deploy casa --entry-point main --runtime python38 --trigger-http
+
 
 workflows:
   fivetran-connectors:
     jobs:
       - build-fivetran-connectors
       - build-job-casa
-      - deploy-casa:
+      - build-job-bugzilla
+      - deploy:
           requires:
             - build-job-casa
-          filters:
-            branches:
-              only: main
-      - build-job-bugzilla
-      - deploy-bugzilla:
-          requires:
             - build-job-bugzilla
           filters:
             branches:
               only: main
+      

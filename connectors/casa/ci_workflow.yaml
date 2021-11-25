@@ -20,20 +20,3 @@ build-job-casa:
     - run:
         name: Test connector code
         command: venv/bin/pytest --black --flake8 connectors/casa/tests/
-deploy-casa:
-  docker:
-    - image: google/cloud-sdk
-  steps:
-    - checkout
-    - run:
-        name: Authorize gcloud CLI
-        command: |
-          export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcp.json"
-          echo "$GCLOUD_SERVICE_KEY" > "$GOOGLE_APPLICATION_CREDENTIALS"
-          gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
-          gcloud config set project $GCLOUD_PROJECT
-    - run:
-        name: Deploy Function
-        command: |
-          cd connectors/casa
-          gcloud functions deploy casa --entry-point main --runtime python38 --trigger-http

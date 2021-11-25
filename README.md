@@ -24,6 +24,18 @@ To add a new connector run:
 in the `connectors/` directory. The new connector directory will be automatically populated with
 boilerplate code.
 
+### Deploying Connectors
+
+To deploy a connector as a Google Cloud Function, the connector needs to be added to the `deploy.yaml` file:
+
+```yaml
+<connector-name>:     # name of the new Google Cloud Function (must be unique)
+  connector: <connector-type>   # name of the connector as specified in connectors/
+  environment: dev         # determines the GCP project the connector is deployed to
+```
+
+The connector will be deployed after the CircleCI configuration has been updated and pushed to `main`.
+
 ### Updating the CircleCI Config
 
 To Update the CircleCI `config.yml` and add new connectors to the CI workflow run:

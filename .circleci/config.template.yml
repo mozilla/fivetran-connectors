@@ -52,6 +52,19 @@ jobs:
           paths:
             - venv/
           key: *python_cache_key
+  deploy:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - checkout
+      - run:
+          name: Authorize gcloud CLI
+          command: |
+            export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcp.json"
+            echo "$GCLOUD_SERVICE_KEY" > "$GOOGLE_APPLICATION_CREDENTIALS"
+            gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+            gcloud config set project $GCLOUD_PROJECT
+{{ deployments | indent(2, True) }}
 
 
 {{ workflows | indent(2, True) }}
@@ -62,10 +75,13 @@ workflows:
       - build-fivetran-connectors
       {%- for connector_name in connectors %}
       - build-job-{{ connector_name }}
-      - deploy-{{ connector_name }}:
+      {%- endfor%}
+      - deploy:
           requires:
+            {%- for connector_name in connectors %}
             - build-job-{{ connector_name }}
+            {%- endfor%}
           filters:
             branches:
               only: main
-      {%- endfor%}
+      

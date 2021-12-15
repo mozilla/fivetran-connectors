@@ -1,6 +1,11 @@
+import logging
 from typing import Any, Dict
 
 import requests
+
+logging.basicConfig(
+    format="[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s"
+)
 
 SCHEMA = {
     "projects": {"primary_key": ["id"]},
@@ -28,6 +33,8 @@ def main(request):
     config = request.json.get("secrets", {})
     state = request.json.get("state", {})
 
+    logging.info(f"Received Fivetran request with state: {state}")
+
     access_token = config["access_token"]
 
     fetch_more_projects = state.get("fetch_more_projects", True)
@@ -36,6 +43,7 @@ def main(request):
     projects_offset = state.get("projects_offset", 0)
 
     def _fetch(offset, url):
+        logging.info(f"Sending request to {url} with offset: {offset}")
         request_params = {
             "limit": QUERY_RESULT_LIMIT,
             "offset": offset,
@@ -88,13 +96,19 @@ def main(request):
         new_projects_offset = 0
         new_users_offset = 0
 
+    new_state = {
+        "fetch_more_users": new_fetch_more_users,
+        "fetch_more_projects": new_fetch_more_projects,
+        "users_offset": new_users_offset,
+        "projects_offset": new_projects_offset,
+    }
+
+    logging.info(
+        f"Updated state: {new_state}, hasMore: {has_more}, inserting {len(users)} users and {len(projects)} projects."
+    )
+
     return response(
-        state={
-            "fetch_more_users": new_fetch_more_users,
-            "fetch_more_projects": new_fetch_more_projects,
-            "users_offset": new_users_offset,
-            "projects_offset": new_projects_offset,
-        },
+        state=new_state,
         schema=SCHEMA,
         inserts={"users": users, "projects": projects},
         deletes={},

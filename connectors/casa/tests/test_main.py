@@ -35,8 +35,16 @@ class TestMain:
     def test_should_get_more_users_and_projects_null_state(self, mock_get):
         state = {}
         valid_projects = {
-            "data": [{"id": i, "name": f"project_{i}"} for i in range(100)]
+            "data": [{"id": i, "name": f"project_{i}"} for i in range(100)],
+            "metadata": {
+                "totalCount": 1000,
+                "nextPage": {
+                    "path": "/api/v1/projects?bookmark=2021-01-01T00%3A00%3A00.000Z",
+                    "bookmark": "2021-01-01T00:00:00.000Z",
+                },
+            },
         }
+
         valid_users = [{"id": i, "name": f"user_{i}"} for i in range(100)]
 
         projects_response = MockResponse(json_data=valid_projects, status_code=200)
@@ -51,7 +59,7 @@ class TestMain:
         assert True is response["state"]["fetch_more_projects"]
         assert True is response["hasMore"]
         assert 100 == response["state"]["users_offset"]
-        assert 100 == response["state"]["projects_offset"]
+        assert "2021-01-01T00:00:00.000Z" == response["state"]["projects_bookmark"]
         assert valid_projects["data"] == response["insert"]["projects"]
         assert valid_users == response["insert"]["users"]
 
@@ -59,15 +67,15 @@ class TestMain:
     def test_should_get_more_users_but_not_projects_previous_state(self, mock_get):
         state = {
             "users_offset": QUERY_RESULT_LIMIT,
-            "projects_offset": QUERY_RESULT_LIMIT,
+            "projects_bookmark": "2021-01-01T00:00:00.000Z",
             "fetch_more_users": True,
             "fetch_more_projects": True,
         }
         valid_projects = {
-            "data": [
-                {"id": i, "name": f"project_{i}"}
-                for i in range(90)  # Less than 100, shouldn't get more afterwards
-            ]
+            "data": [{"id": i, "name": f"project_{i}"} for i in range(90)],
+            "metadata": {  # No nextPage key, so no more projects
+                "totalCount": 1000,
+            },
         }
         valid_users = [{"id": i, "name": f"user_{i}"} for i in range(100)]
 
@@ -85,7 +93,7 @@ class TestMain:
         assert False is response["state"]["fetch_more_projects"]
         assert True is response["hasMore"]
         assert 200 == response["state"]["users_offset"]
-        assert 0 == response["state"]["projects_offset"]
+        assert None is response["state"]["projects_bookmark"]
         assert valid_projects["data"] == response["insert"]["projects"]
         assert valid_users == response["insert"]["users"]
 
@@ -93,7 +101,7 @@ class TestMain:
     def test_dont_fetch_projects_if_dont_need_to(self, mock_get):
         state = {
             "users_offset": QUERY_RESULT_LIMIT,
-            "projects_offset": 0,
+            "projects_bookmark": None,
             "fetch_more_users": True,
             "fetch_more_projects": False,
         }
@@ -110,7 +118,7 @@ class TestMain:
         assert False is response["state"]["fetch_more_projects"]
         assert True is response["hasMore"]
         assert 200 == response["state"]["users_offset"]
-        assert 0 == response["state"]["projects_offset"]
+        assert None is response["state"]["projects_bookmark"]
         assert [] == response["insert"]["projects"]
         assert valid_users == response["insert"]["users"]
 
@@ -118,15 +126,15 @@ class TestMain:
     def test_reset_state_if_no_more_to_fetch(self, mock_get):
         state = {
             "users_offset": QUERY_RESULT_LIMIT,
-            "projects_offset": QUERY_RESULT_LIMIT,
+            "projects_bookmark": "2021-02-01T00:00:00.000Z",
             "fetch_more_users": True,
             "fetch_more_projects": True,
         }
         valid_projects = {
-            "data": [
-                {"id": i, "name": f"project_{i}"}
-                for i in range(90)  # Less than 100, shouldn't get more afterwards
-            ]
+            "data": [{"id": i, "name": f"project_{i}"} for i in range(90)],
+            "metadata": {  # No nextPage key, so no more projects
+                "totalCount": 1000,
+            },
         }
         valid_users = [
             {"id": i, "name": f"user_{i}"}
@@ -145,6 +153,6 @@ class TestMain:
         assert True is response["state"]["fetch_more_projects"]
         assert False is response["hasMore"]
         assert 0 == response["state"]["users_offset"]
-        assert 0 == response["state"]["projects_offset"]
+        assert None is response["state"]["projects_bookmark"]
         assert valid_projects["data"] == response["insert"]["projects"]
         assert valid_users == response["insert"]["users"]

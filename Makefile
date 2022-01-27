@@ -31,6 +31,9 @@ list:
 
 ##         deploy              : Deploys specified connector to target GCP project as a gcloud function
 ## ------------------------------------------------------------------------------------------------------
+MEMORY ?= 256MB
+TIMEOUT ?= 60
+ENTRYPOINT ?= main
 deploy:
 ifeq ($(CONNECTOR_NAME),)
 	@echo "$(RED)No connector_name was provided, please re-run the command and add CONNECTOR_NAME=<connector_name> at the end of the command$(RESET)"
@@ -48,10 +51,10 @@ endif
 		--ignore-file=`pwd`/.gcloudignore \
 		--project=$(PROJECT_ID) \
 		--region=$(REGION) \
-		--entry-point=main \
+		--entry-point=$(ENTRYPOINT) \
 		--runtime=python38 \
-		--memory=256MB \
-		--timeout=60s \
+		--memory=$(MEMORY) \
+		--timeout=$(TIMEOUT)s \
 		--ingress-settings=all \
 		--security-level=secure-optional \
 		--trigger-http \

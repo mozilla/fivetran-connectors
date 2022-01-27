@@ -94,6 +94,7 @@ The expected response format for connectors is:
     "has_more" : true /* if there is more data available that can be imported; or false */
 }
 ```
+More about the response format can be found [here](https://fivetran.com/docs/functions/google-cloud-functions#responseformat)
 
 ### Incremental Data Updates
 

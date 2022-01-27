@@ -7,3 +7,7 @@
 casa:
   connector: casa
   environment: dev
+
+acoustic:
+  connector: acoustic
+  environment: dev

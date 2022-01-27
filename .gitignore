@@ -1,7 +1,13 @@
-*.pyc
+
+# Python related artifacts
 .python-version
-.idea/
-connectors/**/tests/__pycache__/*
-venv/*
-fivetran_connectors.egg-info/
 *.pyc
+__pycache__
+fivetran_connectors.egg-info
+
+# Pytest related folders and files
+.pytest_cache
+
+# IDE and environment related folders and files
+venv
+.idea

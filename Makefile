@@ -5,8 +5,10 @@
 
 
 .DEFAULT_GOAL := help
+
+GREEN=\033[0;32m
 RED=\033[0;31m
-NC=\033[0m  # No Color
+RESET=\033[0m  # No Color
 
 
 PROJECT_ID=dev-fivetran
@@ -18,7 +20,7 @@ VIRTUAL_ENV_FOLDER=venv
 ##   Commands for interacting with GCP Cloud Functions service:
 ##         auth                : For authenticating into gcloud service (browser prompt)
 auth:
-	@echo "Authenticating into gcloud service..."
+	@echo "$(GREEN)Authenticating into gcloud service...$(RESET)"
 	gcloud auth login
 
 ##         list                : Lists all Cloud Functions found inside the GCP project,
@@ -31,17 +33,19 @@ list:
 ## ------------------------------------------------------------------------------------------------------
 deploy:
 ifeq ($(CONNECTOR_NAME),)
-	@echo "$(RED)No connector_name was provided, please re-run the command and add CONNECTOR_NAME=<connector_name> at the end of the command$(NC)"
+	@echo "$(RED)No connector_name was provided, please re-run the command and add CONNECTOR_NAME=<connector_name> at the end of the command$(RESET)"
 	@echo "Example: 'make deploy CONNECTOR_NAME=my_connector'"
 	exit 1
 endif
 
 # Values used for function deploy as specified by the official Fivetran cloud function guide:
 # https://fivetran.com/docs/functions/google-cloud-functions/setup-guide
-	@echo "Deploying connector $(CONNECTOR_NAME) as a gcloud function"
+	@echo "$(GREEN)Deploying connector $(CONNECTOR_NAME) as a gcloud function (updates if already exists)$(RESET)"
 
+# gcloud functions deploy reference: https://cloud.google.com/sdk/gcloud/reference/functions/deploy
 	gcloud functions deploy $(CONNECTOR_NAME) \
 		--source=connectors/$(CONNECTOR_NAME) \
+		--ignore-file=`pwd`/.gcloudignore \
 		--project=$(PROJECT_ID) \
 		--region=$(REGION) \
 		--entry-point=main \
@@ -50,8 +54,8 @@ endif
 		--timeout=60s \
 		--ingress-settings=all \
 		--security-level=secure-optional \
-		--trigger-http
-		--service-account=gcloud-function-executor
+		--trigger-http \
+		--service-account=gcloud-function-executor@dev-fivetran.iam.gserviceaccount.com
 
 
 ##   Commands for environment management:
@@ -73,7 +77,7 @@ create-python-env:
 
 	@venv/bin/pip install -r requirements.txt
 	@venv/bin/pip install -e .
-	@echo "$(RED)fivetran CLI configured! It should now be ready for use.$(NC)"
+	@echo "$(RED)fivetran CLI configured! It should now be ready for use.$(RESET)"
 
 
 ##         clean               : Removes virtual environment folder along with all installed packages

@@ -20,31 +20,23 @@ CI_CONFIG_HEADER = """###
 
 
 class DeployConfig:
-    ci_template = """
-    - run:
-        name: Deploy {connector_name}
-        command: |
-          cd connectors/{connector_type}
-          gcloud functions deploy {connector_name} --entry-point main --runtime python38 --trigger-http --timeout=540 --memory=4096MB
-    """
-
     def __init__(self, file):
         # parse deploy configs from file
         with open(file) as f:
             self.config = yaml.safe_load(f)
     
-    def get_ci_config(self):
-        if self.config is None:
-            return ""
-            
-        return "\n".join(
-            [
-                self.ci_template.format(
-                    connector_name=connector_name, connector_type=config["connector"]
-                )
-                for connector_name, config in self.config.items()
-            ]
-        )
+    def to_dict(self):
+        config = []
+        for (connector_name, connector_config) in self.config.items():
+            config.append(
+                {
+                    "connector_name": connector_name,
+                    "connector": connector_config['connector'],
+                    "environment": connector_config['environment']
+                }
+            )
+
+        return config
 
 
 def validate_yaml(yaml_path: Path) -> bool:
@@ -95,7 +87,7 @@ def update_config(dry_run: bool = False, root: str = ROOT_DIR) -> str:
             [file_path.read_text() for file_path in workflow_configs]
         ),
         connectors=connectors,
-        deployments=deploy_config.get_ci_config(),
+        deployments=deploy_config.to_dict(),
     )
 
     if dry_run:

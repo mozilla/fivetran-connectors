@@ -52,7 +52,9 @@ jobs:
           paths:
             - venv/
           key: *python_cache_key
-  deploy:
+
+{%- for deploy in deployments %}
+  deploy-{{ deploy['connector_name'] }}:
     docker:
       - image: google/cloud-sdk
     steps:
@@ -64,8 +66,12 @@ jobs:
             echo "$GCLOUD_SERVICE_KEY" > "$GOOGLE_APPLICATION_CREDENTIALS"
             gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
             gcloud config set project $GCLOUD_PROJECT
-{{ deployments | indent(2, True) }}
-
+      - run:
+          name: Deploy {{ deploy['connector_name'] }}
+          command: |
+            cd connectors/{{ deploy['connector'] }}
+            gcloud functions deploy {{ deploy['connector_name'] }} --entry-point main --runtime python38 --trigger-http --timeout=540 --memory=4096MB
+{% endfor %}
 
 {{ workflows | indent(2, True) }}
 
@@ -75,13 +81,12 @@ workflows:
       - build-fivetran-connectors
       {%- for connector_name in connectors %}
       - build-job-{{ connector_name }}
-      {%- endfor%}
-      - deploy:
+      {%- endfor %}
+      {%- for deploy in deployments %}
+      - deploy-{{ deploy['connector_name'] }}:
           requires:
-            {%- for connector_name in connectors %}
-            - build-job-{{ connector_name }}
-            {%- endfor%}
+            - build-job-{{ deploy['connector'] }}
           filters:
             branches:
               only: main
-      
+      {%- endfor %}

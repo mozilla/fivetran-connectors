@@ -69,7 +69,7 @@ jobs:
           name: Deploy casa
           command: |
             cd connectors/casa
-            gcloud functions deploy casa --entry-point main --runtime python38 --trigger-http
+            gcloud functions deploy casa --entry-point main --runtime python38 --trigger-http --timeout=540 --memory=4096MB
       
 
 
@@ -95,7 +95,6 @@ jobs:
       - run:
           name: Test connector code
           command: venv/bin/pytest --black --flake8 connectors/bugzilla/tests/
-
 
   build-job-casa:
     docker:

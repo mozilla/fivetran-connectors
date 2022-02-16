@@ -52,7 +52,7 @@ jobs:
           paths:
             - venv/
           key: *python_cache_key
-  deploy:
+  deploy-casa:
     docker:
       - image: google/cloud-sdk
     steps:
@@ -64,14 +64,11 @@ jobs:
             echo "$GCLOUD_SERVICE_KEY" > "$GOOGLE_APPLICATION_CREDENTIALS"
             gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
             gcloud config set project $GCLOUD_PROJECT
-  
       - run:
           name: Deploy casa
           command: |
             cd connectors/casa
             gcloud functions deploy casa --entry-point main --runtime python38 --trigger-http --timeout=540 --memory=4096MB
-      
-
 
   build-job-bugzilla:
     docker:
@@ -126,11 +123,9 @@ workflows:
       - build-fivetran-connectors
       - build-job-casa
       - build-job-bugzilla
-      - deploy:
+      - deploy-casa:
           requires:
             - build-job-casa
-            - build-job-bugzilla
           filters:
             branches:
               only: main
-      

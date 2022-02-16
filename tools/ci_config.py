@@ -25,7 +25,7 @@ class DeployConfig:
         name: Deploy {connector_name}
         command: |
           cd connectors/{connector_type}
-          gcloud functions deploy {connector_name} --entry-point main --runtime python38 --trigger-http
+          gcloud functions deploy {connector_name} --entry-point main --runtime python38 --trigger-http --timeout=540 --memory=4096MB
     """
 
     def __init__(self, file):
@@ -37,7 +37,7 @@ class DeployConfig:
         if self.config is None:
             return ""
             
-        return "/n".join(
+        return "\n".join(
             [
                 self.ci_template.format(
                     connector_name=connector_name, connector_type=config["connector"]
@@ -91,7 +91,7 @@ def update_config(dry_run: bool = False, root: str = ROOT_DIR) -> str:
 
     config_text = config_template.render(
         config_header=CI_CONFIG_HEADER,
-        workflows="\n\n".join(
+        workflows="\n".join(
             [file_path.read_text() for file_path in workflow_configs]
         ),
         connectors=connectors,

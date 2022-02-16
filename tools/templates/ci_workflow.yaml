@@ -36,4 +36,4 @@ deploy-{{ connector_name }}:
         name: Deploy Function
         command: |
           cd connectors/{{ connector_name }}
-          gcloud functions deploy {{ connector_name }} --entry-point main --runtime python38 --trigger-http
+          gcloud functions deploy {{ connector_name }} --entry-point main --runtime python38 --trigger-http --timeout=540 --memory=4096MB

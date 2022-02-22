@@ -36,6 +36,14 @@ To deploy a connector as a Google Cloud Function, the connector needs to be adde
 
 The connector will be deployed after the CircleCI configuration has been updated and pushed to `main`.
 
+During development connectors can also be deployed quickly via:
+
+```
+cd connectors/new_connector
+gcloud functions deploy new_connector --entry-point main --runtime python38 --trigger-http --timeout=540 --memory=4096MB
+```
+This does not require the code to be merged into `main`.
+
 ### Updating the CircleCI Config
 
 To Update the CircleCI `config.yml` and add new connectors to the CI workflow run:

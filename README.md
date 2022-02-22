@@ -44,41 +44,15 @@ To Update the CircleCI `config.yml` and add new connectors to the CI workflow ru
 ./fivetran ci_config update
 ```
 
-### Setting up a Custom Connector in Fivetran
-
-Before adding a new connector to Fivetran, create a new dataset via [bigquery-etl](https://github.com/mozilla/bigquery-etl)
-where the connector will write data to. Datasets should be suffixed with `_export`.
-
-Once a new connector has been added and committed to `main` CircleCI will automatically deploy it
-as a Google Cloud Function to the `dev-fivetran` project.
-
-When setting up a new custom connector in Fivetran for the first time, copy the trigger URL of the
-deployed function:
-
-![Cloud Function Trigger URL](https://github.com/mozilla/fivetran-connectors/blob/main/docs/gcloud-function.png)
-
-In Fivetran, add a new "Google Cloud Function" connector, set the "Destination schema" as the
-create BigQuery destination dataset. Paste the trigger URL in the "Function Trigger" field.
-
-The "Secrets" field is an optional JSON object that the Cloud Function connector will have access to.
-This JSON object can, for example, contain API access keys or other configuration values. Once the
-new connector has been configured, hit "Save and Test". The connector will get triggered to run an
-initial data import.
-
-Generally, data imports should be scheduled via [telemetry-airflow](https://github.com/mozilla/telemetry-airflow)
-instead of Fivetrans built-in scheduling. Create a new DAG in telemetry-airflow, specify a `FivetranOperator` which
-will trigger the Fivetran connector. `FivetranSensor` can be used to monitor the progress of the data import.
-An example of what a data import DAG could look like can be found here: https://github.com/mozilla/telemetry-airflow/blob/main/dags/bugzilla.py
-
-## Custom Connectors Development Notes
+## Custom Connector Development
 
 This is a collection of things to keep in mind/useful information when writing code for custom connectors.
 
+By default the `main()` method in the `main.py` file for the connector will be they entry point for the Cloud Function.
+
 ### Passing Data into Connectors
 
-To pass configuration data, such as API keys, into a custom connector a JSON object can be specified in the
-Fivetran settings. The JSON object can be set as the "Secret". The connector can access the JSON data via 
-the `request` object:
+To pass configuration data, such as API keys, into a custom connector a JSON object can be specified in the Fivetran settings. The JSON object can be set as the "Secret". The connector can access the JSON data via the `request` object:
 
 ```python
 def main(request):
@@ -93,31 +67,29 @@ The expected response format for connectors is:
 {
     "state": {
         "since_id": "2018-01-02T00:00:01Z",
-        // other data
+        /* other data */
     },
     "insert": {
         "table_name": [
             {"id":1, "value": 100},
-            // rows that will get added to "table_name" table in BigQuery
+            /* rows that will get added to "table_name" table in BigQuery */
         ],
-        // ...
+        /* ... */
     },
     "delete": {},
     "schema" : {
         "table_name": {
             "primary_key": ["id"]
         },
-        // ....
+        /* .... */
     },
-    "hasMore" : true // or false
+    "has_more" : true /* if there is more data available that can be imported; or false */
 }
 ```
 
 ### Incremental Data Updates
 
-To keep track of what data has already been imported in previous runs, Fivetran passes a `since_id` value
-as part of the `state` object. `since_id` needs to be updated by the connector and can be set, for example,
-to the date of the last data entry imported.
+To keep track of what data has already been imported in previous runs, Fivetran passes a `since_id` value as part of the `state` object. `since_id` needs to be updated by the connector and can be set, for example, to the date of the last data entry imported.
 
 ```python
 def main(request):
@@ -141,14 +113,11 @@ def main(request):
 
 ### Follow-up Calls to Fetch more Data
 
-Google Cloud Functions have a couple of limitations. For instance, the maximum runtime is around 10 minutes and
-available memory is limited. In some cases importing all data in one run might not be possible.
+Google Cloud Functions have a couple of limitations. For instance, the maximum runtime is around 10 minutes and available memory is limited. In some cases importing all data in one run might not be possible.
 
-`hasMore` can be used to indicate to Fivetran to trigger the connector again to import more available data.
-To keep track of what data has already been imported in previous runs, `state` has an `offset` value. `offset`
-can, for example, be set to the date of the last data record imported.
+`has_more` can be used to indicate to Fivetran to trigger the connector again to import more available data. To keep track of what data has already been imported in previous runs, `state` has an `offset` value. `offset` can, for example, be set to the date of the last data record imported.
 
-`hasMore` and `offset` need to be updated every time the connector is triggered.
+`has_more` and `offset` need to be updated every time the connector is triggered.
 
 ```python
 def main(request):
@@ -161,19 +130,53 @@ def main(request):
 
     # [...]
 
-    # udpate offset and hasMore
+    # udpate offset and has_more
     return {
         "state": {
             "offset": offset + 1
         },
-        "hasMore": has_more_data(data),
+        "has_more": has_more_data(data),
         # [...]
     }
 ```
 
+## Connector Deployment
 
-### Other Resources
+Once a new connector has been added and committed to `main` CircleCI will automatically deploy it
+as a Google Cloud Function to the `dev-fivetran` project.
 
-* https://github.com/fivetran/functions
-* https://cloud.google.com/architecture/partners/building-custom-data-integrations-using-fivetran-and-cloud-functions
-* https://fivetran.com/blog/serverless-etl-with-cloud-functions
+When setting up a new custom connector in Fivetran for the first time, copy the trigger URL of the
+deployed function:
+
+![Cloud Function Trigger URL](https://github.com/mozilla/fivetran-connectors/blob/main/docs/gcloud-function.png)
+
+In Fivetran, add a new "Google Cloud Function" connector, set the "Destination schema" as the
+create BigQuery destination dataset. Paste the trigger URL in the "Function Trigger" field.
+
+The "Secrets" field is an optional JSON object that the Cloud Function connector will have access to.
+This JSON object can, for example, contain API access keys or other configuration values. Once the
+new connector has been configured, hit "Save and Test". The connector will get triggered to run an
+initial data import.
+
+Generally, data imports should be scheduled via [telemetry-airflow](https://github.com/mozilla/telemetry-airflow) instead of Fivetrans built-in scheduling. Since Fivetran usually dumps data into a destination that is not accessible, it is also necessary to set up some ETL to transform the data and write it to an accessible destination. Both the ETL and the scheduling can be specified in [bigquery-etl](https://github.com/mozilla/bigquery-etl).
+
+When writing the query to create derived datasets in bigquery-etl add [the Fivetran import tasks to the scheduling config](https://github.com/mozilla/bigquery-etl/blob/b1a1f5a484ac8ab77c841d1c666bc02e3ccf9ee2/docs/reference/scheduling.md?plain=1#L57). Once changes are merged into main the DAG in Airflow will get updated automatically. Looking at the generated DAGs, each Fivetran task references a **Fivetran connector ID** that needs to be configured as an Airflow variable.
+
+To configure this variable, in the **Airflow Admin - Variables** settings add a new entry. The **Key** needs to be set to the variable name as shown in the DAG source, the **Value** is the Fivetran connector ID which can be copied from the _Connection Details_ of the Fivetran connector _Setup_ tab.
+
+Once configured, the Airflow DAG needs to be enabled.
+
+## How to Debug Issues
+
+1. Check Airflow errors to see which connector is affected.
+    * The Airflow logs will not offer a lot of details on what went wrong. Instead they will link to the logs in Fivetran which are a little more helpful.
+2. Check Fivetran logs of the connector.
+    * Go to [Fivetran dashboard](https://fivetran.com/dashboard/connectors)
+    * Check the connector logs. `reason` might provide some indication on what went wrong, whether it was a Fivetran specific issue or whether the connector encountered a problem.
+3. Check the connector logs.
+    * [Go to the deployed Google Cloud Function](https://console.cloud.google.com/functions/list?env=gen1&project=dev-fivetran) an check the logs for stack traces to determine what went wrong
+5. Fix connector
+    * If the connector needs to be fixed, deploy a new version (happens automatically when merged on `main`)
+6. Reconnect connector in Fivetran
+    * Connectors need to be manually reconnected in Fivetran
+    * Navigate to the _Setup_ tab of the connector and click on _Test Connection_. Wait for the tests to finish.

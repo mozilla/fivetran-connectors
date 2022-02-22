@@ -22,7 +22,7 @@ def response(
     schema: Dict[Any, Any],
     inserts: Dict[Any, Any] = {},
     deletes: Dict[Any, Any] = {},
-    hasMore: bool = False,
+    has_more: bool = False,
 ):
     """Creates the response JSON object that will be processed by Fivetran."""
     return {
@@ -30,5 +30,5 @@ def response(
         "schema": schema,
         "insert": inserts,
         "delete": deletes,
-        "hasMore": hasMore,
+        "has_more": has_more,
     }

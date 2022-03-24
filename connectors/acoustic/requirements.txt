@@ -1,8 +1,0 @@
-attrs==21.4.0
-cattrs==1.10.0
-Jinja2==3.0.3
-paramiko==2.9.2
-requests==2.27.1
-types-paramiko==2.8.10
-types-requests==2.27.7
-xmltodict==0.12.0

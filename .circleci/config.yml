@@ -116,37 +116,12 @@ jobs:
           name: Test connector code
           command: venv/bin/pytest --black --flake8 connectors/casa/tests/
 
-  build-job-acoustic:
-    docker:
-      - image: python:3.8
-    steps:
-      - checkout
-      - compare-branch:
-          pattern: ^connectors/acoustic/
-      - run:
-          name: Build
-          command: |
-            python3.8 -m venv venv/
-            venv/bin/pip install -r requirements.txt
-            venv/bin/pip install -r connectors/acoustic/requirements.txt
-      - run:
-          name: isort
-          command: venv/bin/isort --check connectors/acoustic
-      - run:
-          name: Mypy
-          command: venv/bin/mypy --ignore-missing-imports connectors/acoustic
-      - run:
-          name: Test connector code
-          command: venv/bin/pytest --black --flake8 connectors/acoustic/tests/
-
-
 workflows:
   fivetran-connectors:
     jobs:
       - build-fivetran-connectors
       - build-job-casa
       - build-job-bugzilla
-      - build-job-acoustic
       - deploy-casa:
           requires:
             - build-job-casa

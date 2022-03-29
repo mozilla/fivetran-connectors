@@ -30,7 +30,7 @@ jobs:
       - &restore_venv_cache
         restore_cache:
           keys:
-            
+
             # when lock files change, use increasingly general
             # patterns to restore cache
             - &python_cache_key
@@ -39,7 +39,7 @@ jobs:
               # yamllint disable-line rule:line-length
             - python-3.8-packages-v1-{{ .Branch }}-
             - python-3.8-packages-v1-main-
-            
+
       - run:
           name: Build
           command: |
@@ -115,7 +115,6 @@ jobs:
       - run:
           name: Test connector code
           command: venv/bin/pytest --black --flake8 connectors/casa/tests/
-
 
 workflows:
   fivetran-connectors:

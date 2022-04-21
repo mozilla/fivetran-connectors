@@ -19,7 +19,7 @@ The Acoustic -> BigQuery integration syncs the following data from Acoustic:
 
 ## Airflow configuration
 
-1. Make sure Acoustic Airflow DAG contains configuration for the data type (for example: [contact_export](# TODO: add Github link once code is merged))
+1. Make sure Acoustic Airflow DAG contains configuration for the data type (for example: [contact_export](https://github.com/mozilla/telemetry-airflow/blob/main/dags/fivetran_acoustic.py#L68))
 1. Ensure `acoustic` connection exists in the Airflow deployment (if not create it, see: `Airflow connection` below)
 1. Make sure for each Acoustic data type defined in the DAG all required Airflow variables exist (for example: Fivetran connector id).
 
@@ -39,6 +39,7 @@ Extra: {"refresh_token": "dummy_refresh_token"}
 ```
 
 ### Airflow variables
+
 Variables use the following naming convention:
 `fivetran_acoustic_{data_type}_export_{variable_name}`
 
@@ -61,9 +62,10 @@ fivetran_acoustic_contact_export_list_id: List ID to export (contacts_dev: 13901
 5. For authentication you can use `Login with keypair` or username and password ([more info here](https://help.goacoustic.com/hc/en-us/articles/360042859494-SFTP)).
 5. Press `SAVE & TEST`
 6. Navigate to your new Fivetran connector and go the the `Setup` tab.
-7. Copy the `Fivetran Connector ID` value and add it to `fivetran_acoustic` Airflow DAG. # TODO: add link here once merged
+7. Respectively for `raw_recipient_report` and `contacts` connectors copy their `Fivetran Connector ID` and set it as corresponding Airflow variable (see `Airflow variables` section above).
 
 ### Specific configuration: raw contact events (raw_recipient_report)
+
 ```
 Host: campaign-us-6.goacoustic.com
 Username: <acoustic_username>
@@ -72,8 +74,7 @@ Schema: acoustic_sftp
 Table: raw_recipient_export
 Pattern: Raw\sRecipient\sData[\w\s-]+\.zip
 Archive Pattern:
-File Reading Behavior:
-Read all files as csv
+File Reading Behavior: Read all files as csv
 Compression Behavior: Decompress all files with zip
 Error Handling: Fails a file sync if improperly formatted data detected
 Modified File Merge: Overwrite Rows
@@ -92,8 +93,7 @@ Username: <acoustic_username>
 Folder Path: /download/
 Schema: acoustic_sftp
 Table: contact_export
-Pattern:
-Master\sContact\sDatabase[\s\w-]+\.(csv|CSV)
+Pattern: dev: Master\sContact\sDatabase[\s\w-]+\.(csv|CSV) | prod: Main\sContact\sTable[\s\w-]+\.(csv|CSV)
 Archive Pattern:
 File Reading Behavior: Read all files as csv
 Compression Behavior: No compression
@@ -111,7 +111,16 @@ __IMPORTANT__
 
 _Please note that only once Airflow triggers a Fivetran run then the schedule of the connector changes to manually trigerred._
 
+__Initial set up note__
+
+If the SFTP server does not contain matching files when setting up Fivetran connector the following error will occur: `No matching file/s`
+
+Run Airflow DAG to generate a report file (task: `generate_acoustic_report`) and once this task is complete re-verify Fivetran connector configuration.
+
+This behaviour should only be observed when initially setting up a Fivetran connector (unless the SFTP server already contains matching files).
+
 ---
 
 ## Notes
+
 - Acoustic Campaign archives emails automatically after 450 days by default (450 is max and this number can only be reduced) (_source: [Acoustic Campaign XML APIS Reporting](https://developer.goacoustic.com/acoustic-campaign/reference/reporting)_).

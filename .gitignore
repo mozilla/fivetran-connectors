@@ -10,3 +10,4 @@ fivetran_connectors.egg-info/
 # IDE and environment related folders and files
 venv/
 .idea/
+.git/

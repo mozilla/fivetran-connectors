@@ -189,3 +189,4 @@ Once configured, the Airflow DAG needs to be enabled.
 6. Reconnect connector in Fivetran
     * Connectors need to be manually reconnected in Fivetran
     * Navigate to the _Setup_ tab of the connector and click on _Test Connection_. Wait for the tests to finish.
+test

@@ -81,6 +81,3 @@ workflows:
     jobs:
       - build-fivetran-connectors
       - build-job-bugzilla
-          filters:
-            branches:
-              only: main

@@ -52,23 +52,6 @@ jobs:
           paths:
             - venv/
           key: *python_cache_key
-  deploy-casa:
-    docker:
-      - image: google/cloud-sdk
-    steps:
-      - checkout
-      - run:
-          name: Authorize gcloud CLI
-          command: |
-            export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcp.json"
-            echo "$GCLOUD_SERVICE_KEY" > "$GOOGLE_APPLICATION_CREDENTIALS"
-            gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
-            gcloud config set project $GCLOUD_PROJECT
-      - run:
-          name: Deploy casa
-          command: |
-            cd connectors/casa
-            gcloud functions deploy casa --entry-point main --runtime python38 --trigger-http --timeout=540 --memory=4096MB
 
   build-job-bugzilla:
     docker:
@@ -93,38 +76,11 @@ jobs:
           name: Test connector code
           command: venv/bin/pytest --black --flake8 connectors/bugzilla/tests/
 
-  build-job-casa:
-    docker:
-      - image: python:3.8
-    steps:
-      - checkout
-      - compare-branch:
-          pattern: ^connectors/casa/
-      - run:
-          name: Build
-          command: |
-            python3.8 -m venv venv/
-            venv/bin/pip install -r requirements.txt
-            venv/bin/pip install -r connectors/casa/requirements.txt
-      - run:
-          name: isort
-          command: venv/bin/isort --check connectors/casa
-      - run:
-          name: Mypy
-          command: venv/bin/mypy --ignore-missing-imports connectors/casa
-      - run:
-          name: Test connector code
-          command: venv/bin/pytest --black --flake8 connectors/casa/tests/
-
 workflows:
   fivetran-connectors:
     jobs:
       - build-fivetran-connectors
-      - build-job-casa
       - build-job-bugzilla
-      - deploy-casa:
-          requires:
-            - build-job-casa
           filters:
             branches:
               only: main

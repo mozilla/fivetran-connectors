@@ -30,7 +30,7 @@ jobs:
       - &restore_venv_cache
         restore_cache:
           keys:
-
+            
             # when lock files change, use increasingly general
             # patterns to restore cache
             - &python_cache_key
@@ -39,7 +39,7 @@ jobs:
               # yamllint disable-line rule:line-length
             - python-3.8-packages-v1-{{ .Branch }}-
             - python-3.8-packages-v1-main-
-
+            
       - run:
           name: Build
           command: |
@@ -52,6 +52,24 @@ jobs:
           paths:
             - venv/
           key: *python_cache_key
+  deploy-casa:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - checkout
+      - run:
+          name: Authorize gcloud CLI
+          command: |
+            export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcp.json"
+            echo "$GCLOUD_SERVICE_KEY" > "$GOOGLE_APPLICATION_CREDENTIALS"
+            gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+            gcloud config set project $GCLOUD_PROJECT
+      - run:
+          name: Deploy casa
+          command: |
+            cd connectors/casa
+            gcloud functions deploy casa --entry-point main --runtime python38 --trigger-http --timeout=540 --memory=4096MB
+
 
   build-job-bugzilla:
     docker:
@@ -76,8 +94,15 @@ jobs:
           name: Test connector code
           command: venv/bin/pytest --black --flake8 connectors/bugzilla/tests/
 
+
 workflows:
   fivetran-connectors:
     jobs:
       - build-fivetran-connectors
       - build-job-bugzilla
+      - deploy-casa:
+          requires:
+            - build-job-casa
+          filters:
+            branches:
+              only: main

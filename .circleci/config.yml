@@ -82,9 +82,3 @@ workflows:
     jobs:
       - build-fivetran-connectors
       - build-job-bugzilla
-      - deploy-casa:
-          requires:
-            - build-job-casa
-          filters:
-            branches:
-              only: main

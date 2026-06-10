@@ -4,6 +4,6 @@
 #   connector: <connector-type>   // name of the connector as specified in connectors/
 #   environment: dev         // determines the GCP project the connector is deployed to
 
-#casa:
-#  connector: casa
-#  environment: dev
+casa:
+  connector: casa
+  environment: dev

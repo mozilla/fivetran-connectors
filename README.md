@@ -4,7 +4,7 @@ Custom connectors for [Fivetran](https://fivetran.com/) implemented as Google Cl
 
 ## Development
 
-The tools in this repository are intended for Python 3.8+.
+The tools in this repository are intended for Python 3.11+.
 
 To install the CLI:
 
@@ -40,7 +40,7 @@ During development connectors can also be deployed quickly via:
 
 ```
 cd connectors/new_connector
-gcloud functions deploy new_connector --entry-point main --runtime python38 --trigger-http --timeout=540 --memory=4096MB
+gcloud functions deploy new_connector --entry-point main --runtime python311 --trigger-http --timeout=540 --memory=4096MB
 ```
 This does not require the code to be merged into `main`.
 

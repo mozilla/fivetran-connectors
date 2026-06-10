@@ -12,7 +12,7 @@ if [ "$PWD" != "$SCRIPT_PATH" ]; then
 fi
 
 if ! command -v python3 &> /dev/null; then
-    echo "Please install python (version 3.8 or greater)"
+    echo "Please install python (version 3.11 or greater)"
     exit 1
 fi
 

@@ -68,7 +68,7 @@ jobs:
           name: Deploy casa
           command: |
             cd connectors/casa
-            gcloud functions deploy casa --entry-point main --runtime python38 --trigger-http --timeout=540 --memory=4096MB
+            gcloud functions deploy casa --entry-point main --runtime python311 --trigger-http --timeout=540 --memory=4096MB
 
   build-job-bugzilla:
     docker:
@@ -95,7 +95,7 @@ jobs:
 
   build-job-casa:
     docker:
-      - image: python:3.8
+      - image: python:3.11
     steps:
       - checkout
       - compare-branch:
@@ -103,7 +103,7 @@ jobs:
       - run:
           name: Build
           command: |
-            python3.8 -m venv venv/
+            python3.11 -m venv venv/
             venv/bin/pip install -r requirements.txt
             venv/bin/pip install -r connectors/casa/requirements.txt
       - run:

@@ -1,6 +1,6 @@
 build-job-casa:
   docker:
-    - image: python:3.8
+    - image: python:3.11
   steps:
     - checkout
     - compare-branch:
@@ -8,7 +8,7 @@ build-job-casa:
     - run:
         name: Build
         command: |
-          python3.8 -m venv venv/
+          python3.11 -m venv venv/
           venv/bin/pip install -r requirements.txt
           venv/bin/pip install -r connectors/casa/requirements.txt
     - run:

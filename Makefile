@@ -52,7 +52,7 @@ endif
 		--project=$(PROJECT_ID) \
 		--region=$(REGION) \
 		--entry-point=$(ENTRYPOINT) \
-		--runtime=python38 \
+		--runtime=python311 \
 		--memory=$(MEMORY) \
 		--timeout=$(TIMEOUT)s \
 		--ingress-settings=all \

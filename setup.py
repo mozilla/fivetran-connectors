@@ -38,7 +38,7 @@ setup(
     ],
     long_description="Tooling for building custom Fivetran connectors",
     long_description_content_type="text/markdown",
-    python_requires=">=3.8",
+    python_requires=">=3.11",
     entry_points="""
         [console_scripts]
         fivetran=tools.cli:cli

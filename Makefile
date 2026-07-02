@@ -58,7 +58,8 @@ endif
 		--ingress-settings=all \
 		--security-level=secure-optional \
 		--trigger-http \
-		--service-account=gcloud-function-executor@dev-fivetran.iam.gserviceaccount.com
+		--service-account=gcloud-function-executor@dev-fivetran.iam.gserviceaccount.com \
+		--no-gen2
 
 
 ##   Commands for environment management:

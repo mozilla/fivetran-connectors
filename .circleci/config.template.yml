@@ -70,7 +70,7 @@ jobs:
           name: Deploy {{ deploy['connector_name'] }}
           command: |
             cd connectors/{{ deploy['connector'] }}
-            gcloud functions deploy {{ deploy['connector_name'] }} --entry-point main --runtime python311 --trigger-http --timeout=540 --memory=4096MB
+            gcloud functions deploy {{ deploy['connector_name'] }} --entry-point main --runtime python311 --trigger-http --timeout=540 --memory=4096MB --no-gen2
 {% endfor %}
 
 {{ workflows | indent(2, True) }}

@@ -75,7 +75,7 @@ def main(request):
         metadata = projects_response["metadata"]
 
         if "nextPage" in metadata:
-            new_projects_bookmark = metadata["nextPage"]["bookmark"]
+            new_projects_bookmark = projects[-1]["id"]
             new_fetch_more_projects = True
 
     users = []

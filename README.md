@@ -40,7 +40,7 @@ During development connectors can also be deployed quickly via:
 
 ```
 cd connectors/new_connector
-gcloud functions deploy new_connector --entry-point main --runtime python311 --trigger-http --timeout=540 --memory=4096MB
+gcloud functions deploy new_connector --entry-point main --runtime python311 --trigger-http --timeout=540 --memory=4096MB --no-gen2
 ```
 This does not require the code to be merged into `main`.
 

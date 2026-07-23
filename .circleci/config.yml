@@ -68,7 +68,7 @@ jobs:
           name: Deploy casa
           command: |
             cd connectors/casa
-            gcloud functions deploy casa --entry-point main --runtime python311 --trigger-http --timeout=540 --memory=4096MB
+            gcloud functions deploy casa --entry-point main --runtime python311 --trigger-http --timeout=540 --memory=4096MB --no-gen2
 
   build-job-bugzilla:
     docker:

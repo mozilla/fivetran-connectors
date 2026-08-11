@@ -74,8 +74,8 @@ def main(request):
         projects = projects_response["data"]
         metadata = projects_response["metadata"]
 
-        if "nextPage" in metadata:
-            new_projects_bookmark = metadata["nextPage"]["bookmark"]
+        if len(projects) == QUERY_RESULT_LIMIT:
+            new_projects_bookmark = projects[-1]["id"]
             new_fetch_more_projects = True
 
     users = []

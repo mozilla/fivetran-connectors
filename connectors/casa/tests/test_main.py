@@ -59,7 +59,7 @@ class TestMain:
         assert True is response["state"]["fetch_more_projects"]
         assert True is response["hasMore"]
         assert 100 == response["state"]["users_offset"]
-        assert "2021-01-01T00:00:00.000Z" == response["state"]["projects_bookmark"]
+        assert 99 == response["state"]["projects_bookmark"]
         assert valid_projects["data"] == response["insert"]["projects"]
         assert valid_users == response["insert"]["users"]
 
